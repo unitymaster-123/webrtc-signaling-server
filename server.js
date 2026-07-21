@@ -13,7 +13,7 @@ let browserClient = null;
 
 let lastOffer = null;
 
-// ✅ candidate キャッシュ（相手が不在でも捨てない）
+
 let cachedCandidatesFromUnity = [];
 let cachedCandidatesFromBrowser = [];
 
@@ -37,33 +37,32 @@ wss.on("connection", (ws) => {
       return;
     }
 
-    console.log("📦 Parsed message:", msg);
+    console.log(" Parsed message:", msg);
 
-    // --- Role registration ---
     if (msg.role === "unity") {
       unityClient = ws;
-      console.log("🎮 Unity client registered");
+      console.log(" Unity client registered");
 
-      // Unityが再接続してきたら古いcandidateは掃除
+     
       cachedCandidatesFromBrowser = [];
       return;
     }
 
     if (msg.role === "browser") {
       browserClient = ws;
-      console.log("🖥️ Browser client registered");
+      console.log(" Browser client registered");
 
-      // Offerがあれば即送信
+
       if (lastOffer) {
-        console.log("📤 Sending cached offer to browser");
+        console.log(" Sending cached offer to browser");
         safeSend(browserClient, lastOffer);
       } else {
-        console.log("⚠️ No cached offer yet.");
+        console.log(" No cached offer yet.");
       }
 
-      // ✅ Unity->Browser のcandidateをまとめて送る
+
       if (cachedCandidatesFromUnity.length > 0) {
-        console.log(`📤 Flush Unity candidates -> Browser: ${cachedCandidatesFromUnity.length}`);
+        console.log(` Flush Unity candidates -> Browser: ${cachedCandidatesFromUnity.length}`);
         for (const c of cachedCandidatesFromUnity) safeSend(browserClient, c);
         cachedCandidatesFromUnity = [];
       }
@@ -71,17 +70,17 @@ wss.on("connection", (ws) => {
       return;
     }
 
-    // --- Normal message ---
+
     switch (msg.type) {
       case "offer": {
-        console.log("🎥 Offer received from Unity");
+        console.log(" Offer received from Unity");
         lastOffer = JSON.stringify(msg);
 
         if (browserClient && browserClient.readyState === WebSocket.OPEN) {
           safeSend(browserClient, lastOffer);
-          console.log("📡 Offer forwarded to browser");
+          console.log(" Offer forwarded to browser");
         } else {
-          console.log("⚠️ No browser client, offer cached.");
+          console.log(" No browser client, offer cached.");
         }
         break;
       }
@@ -90,46 +89,46 @@ wss.on("connection", (ws) => {
         console.log("✅ Answer received from Browser");
         if (unityClient && unityClient.readyState === WebSocket.OPEN) {
           safeSend(unityClient, msg);
-          console.log("📡 Answer forwarded to Unity");
+          console.log(" Answer forwarded to Unity");
 
-          // ✅ Browser->Unity のcandidateをまとめて送る
+     
           if (cachedCandidatesFromBrowser.length > 0) {
-            console.log(`📤 Flush Browser candidates -> Unity: ${cachedCandidatesFromBrowser.length}`);
+            console.log(` Flush Browser candidates -> Unity: ${cachedCandidatesFromBrowser.length}`);
             for (const c of cachedCandidatesFromBrowser) safeSend(unityClient, c);
             cachedCandidatesFromBrowser = [];
           }
         } else {
-          console.log("⚠️ No active Unity client");
+          console.log(" No active Unity client");
         }
         break;
       }
 
       case "candidate": {
-        // console.log("🧊 ICE Candidate exchange");
+  
         const packet = JSON.stringify(msg);
 
         if (ws === unityClient) {
           if (browserClient && browserClient.readyState === WebSocket.OPEN) {
             safeSend(browserClient, packet);
           } else {
-            // ✅ browser不在ならキャッシュ
+   
             cachedCandidatesFromUnity.push(packet);
-            console.log("🕒 Candidate cached (Unity->Browser)");
+            console.log(" Candidate cached (Unity->Browser)");
           }
         } else if (ws === browserClient) {
           if (unityClient && unityClient.readyState === WebSocket.OPEN) {
             safeSend(unityClient, packet);
           } else {
-            // ✅ unity不在ならキャッシュ
+        
             cachedCandidatesFromBrowser.push(packet);
-            console.log("🕒 Candidate cached (Browser->Unity)");
+            console.log(" Candidate cached (Browser->Unity)");
           }
         }
         break;
       }
 
       default:
-        console.log("⚠️ Unknown message type:", msg.type);
+        console.log(" Unknown message type:", msg.type);
     }
   });
 
@@ -138,15 +137,14 @@ wss.on("connection", (ws) => {
 
     if (ws === unityClient) {
       unityClient = null;
-      console.log("🧹 Unity client cleared");
-      // Unityが切れたら offer/candidates は残してもいいが、実験中は掃除推奨
-      // lastOffer = null;
+      console.log(" Unity client cleared");
+
       cachedCandidatesFromUnity = [];
     }
 
     if (ws === browserClient) {
       browserClient = null;
-      console.log("🧹 Browser client cleared");
+      console.log(" Browser client cleared");
       cachedCandidatesFromBrowser = [];
     }
   });
@@ -154,5 +152,5 @@ wss.on("connection", (ws) => {
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
-  console.log(`🚀 Signaling server running on port ${PORT}`);
+  console.log(` Signaling server running on port ${PORT}`);
 });
