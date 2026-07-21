@@ -1,13 +1,14 @@
 {
-  "name": "webrtc-server",
+  "name": "webrtc-signaling-server",
   "version": "1.0.0",
+  "private": true,
+  "description": "WebRTC signaling server for streaming Unity video to a browser in an AIRR remote display system.",
   "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "express": "^4.18.2",
     "ws": "^8.13.0"
-  },
-  "scripts": {
-    "start": "node server.js"
   }
 }
-
