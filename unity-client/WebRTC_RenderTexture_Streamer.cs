@@ -145,7 +145,7 @@ private IEnumerator Start()
                     "turns:standard.relay.metered.ca:443?transport=tcp"
                 },
                 username = "YOUR_TURN_USERNAME",
-                credential = "YOUR_TURN_USERNAME"
+                credential = "YOUR_TURN_CREDENTIAL"
             }
         }
     };
